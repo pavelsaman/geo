@@ -13,7 +13,7 @@ function print_help {
 	cat <<EOF
 Version 1.0
 
-This program provides a current latitude and longtitude when a city is specified.
+This program provides latitude and longitude of places around the world.
 
 Command Usage:
 geo.bash Prague

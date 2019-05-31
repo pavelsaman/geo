@@ -1,6 +1,6 @@
 # Geo 
 
-Geo is a tool for getting latitute and longtitude of places around the world.
+Geo is a tool for getting latitute and longitude of places around the world.
 
 The API that gets queried for data is https://locationiq.com/
 
