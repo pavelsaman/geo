@@ -112,7 +112,6 @@ function get_resource {
 			response=$(wget -qO- "$api_uri")
 			;;
 		http)
-
 			response=$(http -b GET "$api_uri")
 			;;
 	esac
