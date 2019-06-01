@@ -1,6 +1,6 @@
 # Geo 
 
-Geo is a tool for getting latitute and longitude of places around the world.
+Geo is a tool for getting latitute and longitude of places around the world. Reverse search is possible as well.
 
 The API that gets queried for data is https://locationiq.com/
 
@@ -22,6 +22,7 @@ $ geo.bash Prague
 $ geo.bash -c Tallinn
 $ geo.bash -C Estonia
 $ geo.bash -c Prague -C "Czech Republic"
+$ geo --lat 50.0874654 --lon 14.4212535
 ```
 
 # Example Output
