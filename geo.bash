@@ -91,8 +91,6 @@ function check_params {
 		lon="$2"
 		return 0
 	fi
-	echo $lat
-	echo $lon
 
 	return 1
 }
