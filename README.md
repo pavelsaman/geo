@@ -4,7 +4,7 @@ Geo is a tool for getting latitute and longitude of places around the world. Rev
 
 The API that gets queried for data is https://locationiq.com/
 
-Make sure you have python2 or python3 installed as well as one of the following: wget, curl, httpie. If you want to use autocompletion for countries (<tab><tab> after -C option), you need to have jq installed.
+Make sure you have python2 or python3 installed as well as one of the following: wget, curl, httpie. If you want to use autocompletion for countries (\<tab\>\<tab\> after -C option), you need to have jq installed.
 
 # Installation Steps
 1) git clone or just get both of the .bash scripts as well as Makefile
