@@ -51,7 +51,7 @@ lat: -6.7481107
 lon: 111.3365866
 ```
 
-# Coutries Autocompletion
+# Countries Autocompletion
 
 The program will attempt to get all countries around the world from https://restcountries.eu/ and save the names into ~/.countries. This will run in the background, so the prompt will be given back fast.
 
