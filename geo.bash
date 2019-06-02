@@ -32,6 +32,7 @@ Prerequisites:
 -python2 || python3
 -curl || wget || httpie
 -Internet connection
+-optional: jq (only if you want to use autocompletion for countries)
 
 MIT licence
 Made by Pavel Saman
@@ -194,19 +195,17 @@ function print_response {
 	fi
 }
 
+# get a list of countries for autocompletion
+# this function is meant to be run as a job since it takes forever to parse the result
 function get_countries {
-	get_resource "$api_countries"
-	(( number_of_results=$(echo "$response" | grep -o "\"name\":" | wc -l) ))
-
-	if [[ $python = "2" ]]; then
-		for (( i=0; i < number_of_results; i++ )); do
-			python2 -c "import sys, json, codecs; codecs.lookup('utf-8')[-1](sys.stdout); print json.load(sys.stdin)[$i]['name']" <<< "$response" >> "$countries_file"
+	if [[ -n $(jq -V) ]]; then
+		get_resource "$api_countries"
+		number_of_countries=$(grep -o "{\"name" <<< "$response" | wc -l)
+		
+		for (( i=0; i < number_of_countries; i++ )); do
+			jq -r .[$i].name <<< "$response" >> "$countries_file"
 		done
-	else
-		for (( i=0; i < number_of_results; i++ )); do
-			python3 -c "import sys, json, codecs; codecs.lookup('utf-8')[-1](sys.stdout); print(json.load(sys.stdin)[$i]['name'])" <<< "$response" >> "$countries_file"
-		done
-	fi
+	fi	
 }
 
 case "$1" in
@@ -222,7 +221,8 @@ case "$1" in
 		get_resource "$api_uri" || { echo "An error occured when getting the resource. Cannot continue."; exit 1; }
 		print_response
 		# get a list of countries so next time, there's gonna be autocompletion
-		get_countries "$api_countries"
+		# run it as a background job, so the user gets the prompt faster
+		get_countries "$api_countries" &
 		;;
 esac	
 

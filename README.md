@@ -4,7 +4,7 @@ Geo is a tool for getting latitute and longitude of places around the world. Rev
 
 The API that gets queried for data is https://locationiq.com/
 
-Make sure you have python2 or python3 installed as well as one of the following: wget, curl, httpie.
+Make sure you have python2 or python3 installed as well as one of the following: wget, curl, httpie. If you want to use autocompletion for countries (<tab><tab> after -C option), you need to have jq installed.
 
 # Installation Steps
 1) git clone or just get both of the .bash scripts as well as Makefile
@@ -51,3 +51,16 @@ lat: -6.7481107
 lon: 111.3365866
 ```
 
+# Coutries Autocompletion
+
+The program will attempt to get all countries around the world from https://restcountries.eu/ and save the names into ~/.countries. This will run in the background, so the prompt will be given back fast.
+
+Next time a user can use autocompletion for countries as shown below.
+
+```
+$ geo.bash -C <tab><tab>
+Display all 250 possibilities? (y or n)
+
+$ geo.bash -C Ca<tab><tab>
+Cabo\ Verde      Cambodia         Cameroon         Canada           Cayman\ Islands
+```

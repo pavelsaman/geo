@@ -3,6 +3,7 @@
 countries_file="${HOME}/.countries"
 countries=()
 
+# read country names from a local file
 function _suggest_countries {
 	if [[ -f $countries_file && -r $countries_file ]]; then
 		while read -r country; do
@@ -10,7 +11,6 @@ function _suggest_countries {
 		done < "$countries_file"
 	fi
 }
-
 
 function _geo_completion {
 	if (( ${COMP_CWORD} == 1 )); then
@@ -27,12 +27,12 @@ function _geo_completion {
 		else
 			return
 		fi
-	elif (( ${COMP_CWORD} == 2 )); then
-		if [[ ${COMP_WORDS[1]} = "-C" ]]; then
+	elif (( ${COMP_CWORD} == 2 || ${COMP_CWORD} == 4 )); then
+		if [[ ${COMP_WORDS[((COMP_CWORD-1))]} = "-C" ]]; then
 			_suggest_countries
 
 			local IFS=$'\n'
-			candidates=($(compgen -W "${countries[*]}" -- "${COMP_WORDS[2]}"))
+			candidates=($(compgen -W "${countries[*]}" -- "${COMP_WORDS[${COMP_CWORD}]}" 2>/dev/null))
 		
 			if (( ${#candidates[*]} != 0 )); then
 				COMPREPLY=($(printf '%q\n' "${candidates[@]}" 2>/dev/null))
