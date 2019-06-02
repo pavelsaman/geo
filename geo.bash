@@ -152,37 +152,41 @@ function print_response {
 	(( number_of_results=$(echo "$response" | grep -o "display_name" | wc -l) ))
 	
 	if [[ $python = "2" ]]; then
-		for (( i=0; i < number_of_results; i++ )); do
-			if [[ -n $lat ]]; then
+		if [[ -n $lat ]]; then
+			for (( i=0; i < number_of_results; i++ )); do
 				python2 -c "import sys, json; print json.load(sys.stdin)['display_name']" <<< "$response"
 				printf "lat: "
 				python2 -c "import sys, json; print json.load(sys.stdin)['lat']" <<< "$response"
 				printf "lon: "
 				python2 -c "import sys, json; print json.load(sys.stdin)['lon']" <<< "$response"
-			else
+			done
+		else
+			for (( i=0; i < number_of_results; i++ )); do
 				python2 -c "import sys, json; print json.load(sys.stdin)[$i]['display_name']" <<< "$response"
 				printf "lat: "
 				python2 -c "import sys, json; print json.load(sys.stdin)[$i]['lat']" <<< "$response"
 				printf "lon: "
 				python2 -c "import sys, json; print json.load(sys.stdin)[$i]['lon']" <<< "$response"
-			fi
-		done
+			done
+		fi
 	else
-		for (( i=0; i < number_of_results; i++ )); do
-			if [[ -n $lat ]]; then
+		if [[ -n $lat ]]; then
+			for (( i=0; i < number_of_results; i++ )); do
 				python3 -c "import sys, json; print(json.load(sys.stdin)['display_name'])" <<< "$response"
 				printf "lat: "
 				python3 -c "import sys, json; print(json.load(sys.stdin)['lat'])" <<< "$response"
 				printf "lon: "
 				python3 -c "import sys, json; print(json.load(sys.stdin)['lon'])" <<< "$response"
-			else
+			done
+		else
+			for (( i=0; i < number_of_results; i++ )); do
 				python3 -c "import sys, json; print(json.load(sys.stdin)[$i]['display_name'])" <<< "$response"
 				printf "lat: "
 				python3 -c "import sys, json; print(json.load(sys.stdin)[$i]['lat'])" <<< "$response"
 				printf "lon: "
 				python3 -c "import sys, json; print(json.load(sys.stdin)[$i]['lon'])" <<< "$response"
-			fi
-		done
+			done
+		fi
 	fi
 }
 
