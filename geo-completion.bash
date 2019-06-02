@@ -13,9 +13,9 @@ function _suggest_countries {
 }
 
 function _geo_completion {
-	if (( ${COMP_CWORD} == 1 )); then
+	if (( COMP_CWORD == 1 )); then
 		COMPREPLY=($(compgen -W "-c -C --lat --lon" -- "${COMP_WORDS[1]}" 2>/dev/null))
-	elif (( ${COMP_CWORD} == 3 )); then
+	elif (( COMP_CWORD == 3 )); then
 		if [[ ${COMP_WORDS[1]} = "-c" ]]; then
 			COMPREPLY=($(compgen -W "-C" -- "${COMP_WORDS[3]}" 2>/dev/null))
 		elif [[ ${COMP_WORDS[1]} = "-C" ]]; then
@@ -27,7 +27,7 @@ function _geo_completion {
 		else
 			return
 		fi
-	elif (( ${COMP_CWORD} == 2 || ${COMP_CWORD} == 4 )); then
+	elif (( COMP_CWORD == 2 || COMP_CWORD == 4 )); then
 		if [[ ${COMP_WORDS[((COMP_CWORD-1))]} = "-C" ]]; then
 			_suggest_countries
 
