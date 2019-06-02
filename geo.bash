@@ -4,11 +4,13 @@ http_client=""
 python=""
 api_key="$GEO_API_KEY"
 api_uri="https://eu1.locationiq.com/v1/search.php?key=${api_key}&q=SEARCH_PATTERN&format=json"
+api_countries="https://restcountries.eu/rest/v2/all"
 city=""
 country=""
 lat=""
 lon=""
 response=""
+countries_file="${HOME}/.countries"
 
 # prints help - how to use the program
 function print_help {
@@ -124,22 +126,24 @@ function check_python {
 	return 1
 }
 
-# performs a http request
-function get_resource {
+function prepare_link {
 	[[ -n $city && -z $country ]] && api_uri=${api_uri//q=SEARCH_PATTERN/city=${city}} 
 	[[ -z $city && -n $country ]] && api_uri=${api_uri//q=SEARCH_PATTERN/country=${country}}
 	[[ -n $city && -n $country ]] && api_uri=${api_uri//SEARCH_PATTERN/${city},${country}}
 	[[ -n $lat && -n $lon ]] && { api_uri=${api_uri//search/reverse}; api_uri=${api_uri//q=SEARCH_PATTERN/lat=${lat}&lon=${lon}}; }
+}
 
+# performs a http request
+function get_resource {
 	case $http_client in
 		curl)
-			response=$(curl -s --request GET "$api_uri")
+			response=$(curl -s --request GET "$1")
 			;;
 		wget)
-			response=$(wget -qO- "$api_uri")
+			response=$(wget -qO- "$1")
 			;;
 		http)
-			response=$(http -b GET "$api_uri")
+			response=$(http -b GET "$1")
 			;;
 	esac
 
@@ -155,7 +159,7 @@ function print_response {
 		if [[ -n $lat ]]; then
 			for (( i=0; i < number_of_results; i++ )); do
 				python2 -c "import sys, json; print json.load(sys.stdin)['display_name']" <<< "$response"
-				printf "lat: "
+				printf "lat: "i
 				python2 -c "import sys, json; print json.load(sys.stdin)['lat']" <<< "$response"
 				printf "lon: "
 				python2 -c "import sys, json; print json.load(sys.stdin)['lon']" <<< "$response"
@@ -190,6 +194,21 @@ function print_response {
 	fi
 }
 
+function get_countries {
+	get_resource "$api_countries"
+	(( number_of_results=$(echo "$response" | grep -o "\"name\":" | wc -l) ))
+
+	if [[ $python = "2" ]]; then
+		for (( i=0; i < number_of_results; i++ )); do
+			python2 -c "import sys, json, codecs; codecs.lookup('utf-8')[-1](sys.stdout); print json.load(sys.stdin)[$i]['name']" <<< "$response" >> "$countries_file"
+		done
+	else
+		for (( i=0; i < number_of_results; i++ )); do
+			python3 -c "import sys, json, codecs; codecs.lookup('utf-8')[-1](sys.stdout); print(json.load(sys.stdin)[$i]['name'])" <<< "$response" >> "$countries_file"
+		done
+	fi
+}
+
 case "$1" in
 	h | H | help | HELP | --help | --HELP | -h | -H)
 		print_help
@@ -199,8 +218,11 @@ case "$1" in
 		check_api_key || { echo 'GEO_API_KEY was not found among exported variables. Cannot continue.'; exit 1; }
 		get_http_client || { echo "None of the following is installed: wget, curl, httpie. Cannot continue."; exit 1; }
 		check_python || { echo "Your python (os just a symlink) is not in version 2, nor 3. Cannot continue."; exit 1; }
+		prepare_link
 		get_resource "$api_uri" || { echo "An error occured when getting the resource. Cannot continue."; exit 1; }
 		print_response
+		# get a list of countries so next time, there's gonna be autocompletion
+		get_countries "$api_countries"
 		;;
 esac	
 

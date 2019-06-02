@@ -28,15 +28,17 @@ function _geo_completion {
 			return
 		fi
 	elif (( ${COMP_CWORD} == 2 )); then
-		_suggest_countries
+		if [[ ${COMP_WORDS[1]} = "-C" ]]; then
+			_suggest_countries
 
-		local IFS=$'\n'
-		candidates=($(compgen -W "${countries[*]}" -- "${COMP_WORDS[2]}"))
+			local IFS=$'\n'
+			candidates=($(compgen -W "${countries[*]}" -- "${COMP_WORDS[2]}"))
 		
-		if (( ${#candidates[*]} != 0 )); then
-			COMPREPLY=($(printf '%q\n' "${candidates[@]}" 2>/dev/null))
-		else
-			COMPREPLY=()
+			if (( ${#candidates[*]} != 0 )); then
+				COMPREPLY=($(printf '%q\n' "${candidates[@]}" 2>/dev/null))
+			else
+				COMPREPLY=()
+			fi
 		fi
 	fi	
 }
