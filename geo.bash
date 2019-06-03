@@ -160,17 +160,17 @@ function print_response {
 		if [[ -n $lat ]]; then
 			for (( i=0; i < number_of_results; i++ )); do
 				python2 -c "import sys, json; print json.load(sys.stdin)['display_name']" <<< "$response"
-				printf "lat: "i
+				echo -n "lat: "i
 				python2 -c "import sys, json; print json.load(sys.stdin)['lat']" <<< "$response"
-				printf "lon: "
+				echo -n "lon: "
 				python2 -c "import sys, json; print json.load(sys.stdin)['lon']" <<< "$response"
 			done
 		else
 			for (( i=0; i < number_of_results; i++ )); do
 				python2 -c "import sys, json; print json.load(sys.stdin)[$i]['display_name']" <<< "$response"
-				printf "lat: "
+				echo -n "lat: "
 				python2 -c "import sys, json; print json.load(sys.stdin)[$i]['lat']" <<< "$response"
-				printf "lon: "
+				echo -n "lon: "
 				python2 -c "import sys, json; print json.load(sys.stdin)[$i]['lon']" <<< "$response"
 			done
 		fi
@@ -178,17 +178,17 @@ function print_response {
 		if [[ -n $lat ]]; then
 			for (( i=0; i < number_of_results; i++ )); do
 				python3 -c "import sys, json; print(json.load(sys.stdin)['display_name'])" <<< "$response"
-				printf "lat: "
+				echo -n "lat: "
 				python3 -c "import sys, json; print(json.load(sys.stdin)['lat'])" <<< "$response"
-				printf "lon: "
+				echo -n "lon: "
 				python3 -c "import sys, json; print(json.load(sys.stdin)['lon'])" <<< "$response"
 			done
 		else
 			for (( i=0; i < number_of_results; i++ )); do
 				python3 -c "import sys, json; print(json.load(sys.stdin)[$i]['display_name'])" <<< "$response"
-				printf "lat: "
+				echo -n "lat: "
 				python3 -c "import sys, json; print(json.load(sys.stdin)[$i]['lat'])" <<< "$response"
-				printf "lon: "
+				echo -n "lon: "
 				python3 -c "import sys, json; print(json.load(sys.stdin)[$i]['lon'])" <<< "$response"
 			done
 		fi
