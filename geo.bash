@@ -211,6 +211,14 @@ function check_redis {
 	return 0
 }
 
+# gets a key for GEO places for Redis
+# takes GEO_REDIS_KEY value from env, a fallback value is "places"
+function get_redis_geo_key {
+	key="$GEO_REDIS_KEY"
+	[[ -z $key ]] && key="places"
+	echo "$key"
+}
+
 # saves the first result into Redis
 # the key will be "places" and members will be in format ${city}:${country}
 function save_result {
@@ -221,12 +229,13 @@ function save_result {
 		lat=$(python3 -c "import sys, json; print(json.load(sys.stdin)[0]['lat'])" <<< "$response")
 		lon=$(python3 -c "import sys, json; print(json.load(sys.stdin)[0]['lon'])" <<< "$response")
 	fi
-
+	
+	key=$(get_redis_geo_key)
 	# save into Redis
 	# a place might already be stored, then I check if it is stored and only if it isn't there's an error
-	result=$(redis-cli GEOADD places "$lat" "$lon" "${city}:${country}" 2>/dev/null)
+	result=$(redis-cli GEOADD "$key" "$lat" "$lon" "${city}:${country}" 2>/dev/null)
 	if (( result == 0 )); then # either an error or a place is already stored
-		already_exists=$(redis-cli GEOHASH places "${city}:${country}")
+		already_exists=$(redis-cli GEOHASH "$key" "${city}:${country}")
 		[[ $already_exists =~ (nil) ]] && return 1 # error
 		return 0
 	elif (( result > 1 || result < 0 )); then # error (shouldn't ever go in here, but to be sure)

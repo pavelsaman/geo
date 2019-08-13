@@ -72,5 +72,6 @@ Cabo\ Verde      Cambodia         Cameroon         Canada           Cayman\ Isla
 # Redis storage
 
 The first result could be saved into Redis with -s or --save option as the 5th parameter.
-The key used is "places", members are in the following format: ${city}:${country}
+The key used is taken from $GEO_REDIS_KEY environment variable, if the variable is not present or is empty, the fallback key is "places".
+Members are in the following format: ${city}:${country}
 
