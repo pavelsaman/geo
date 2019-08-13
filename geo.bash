@@ -166,7 +166,7 @@ function get_resource {
 function print_response {
 	(( number_of_results=$(echo "$response" | grep -o "display_name" | wc -l) ))
 	
-	if [[ $python = "2" ]]; then
+	if [[ $python == "2" ]]; then
 		if [[ -n $lat ]]; then
 			for (( i=0; i < number_of_results; i++ )); do
 				python2 -c "import sys, json; print json.load(sys.stdin)['display_name']" <<< "$response"
@@ -251,7 +251,7 @@ function save_result {
 	key=$(get_redis_geo_key)
 	# save into Redis
 	# a place might already be stored, then I check if it is stored and only if it isn't there's an error
-	result=$(redis-cli -h "$redis_hostname" -p "$redis_port" GEOADD "$key" "$lat" "$lon" "${city}:${country}" 2>/dev/null)
+	result=$(redis-cli -h "$redis_hostname" -p "$redis_port" GEOADD "$key" "$lon" "$lat" "${city}:${country}" 2>/dev/null)
 	if [[ $result == "0" ]]; then # either an error or a place is already stored
 		already_exists=$(redis-cli -h "$redis_hostname" -p "$redis_port" GEOHASH "$key" "${city}:${country}" 2>/dev/null)
 		[[ $already_exists =~ (nil) ]] && return 1 # error
