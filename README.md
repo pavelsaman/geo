@@ -75,3 +75,5 @@ The first result could be saved into Redis with -s or --save option as the 5th p
 The key used is taken from $GEO_REDIS_KEY environment variable, if the variable is not present or is empty, the fallback key is "places".
 Members are in the following format: ${city}:${country}
 
+Redis connection could be set by REDIS_HOSTNAME and REDIS_PORT environment variables. Fallback values are localhost and 6379 respectively.
+

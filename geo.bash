@@ -219,6 +219,22 @@ function get_redis_geo_key {
 	echo "$key"
 }
 
+# gets a Redis hostname
+# fallback localhost
+function get_redis_hostname {
+	hostname="$REDIS_HOSTNAME"
+	[[ -z $hostname ]] && hostname="localhost"
+	echo "$hostname"
+}
+
+# gets Redis port
+# fallback 6379
+function get_redis_port {
+	port="$REDIS_PORT"
+	[[ -z $port ]] && port="6379"
+	echo "$port"
+}
+
 # saves the first result into Redis
 # the key will be "places" and members will be in format ${city}:${country}
 function save_result {
@@ -230,18 +246,22 @@ function save_result {
 		lon=$(python3 -c "import sys, json; print(json.load(sys.stdin)[0]['lon'])" <<< "$response")
 	fi
 	
+	redis_hostname=$(get_redis_hostname)
+	redis_port=$(get_redis_port)
 	key=$(get_redis_geo_key)
 	# save into Redis
 	# a place might already be stored, then I check if it is stored and only if it isn't there's an error
-	result=$(redis-cli GEOADD "$key" "$lat" "$lon" "${city}:${country}" 2>/dev/null)
-	if (( result == 0 )); then # either an error or a place is already stored
-		already_exists=$(redis-cli GEOHASH "$key" "${city}:${country}")
+	result=$(redis-cli -h "$redis_hostname" -p "$redis_port" GEOADD "$key" "$lat" "$lon" "${city}:${country}" 2>/dev/null)
+	if [[ $result == "0" ]]; then # either an error or a place is already stored
+		already_exists=$(redis-cli -h "$redis_hostname" -p "$redis_port" GEOHASH "$key" "${city}:${country}" 2>/dev/null)
 		[[ $already_exists =~ (nil) ]] && return 1 # error
 		return 0
 	elif (( result > 1 || result < 0 )); then # error (shouldn't ever go in here, but to be sure)
 		return 1
-	elif (( result == 1 )); then # successfully stored into Redis
+	elif [[ $result == 1 ]]; then # successfully stored into Redis
 		return 0
+	else
+		return 1
 	fi
 }
 
@@ -273,7 +293,7 @@ case "$1" in
 		# if save option is present
 		if (( save_option == 1 )); then
 			# Redis has to be installed, only then save results
-			check_redis && { save_result || { echo ""; echo "Error when saving into Redis. No results saved."; } } || { echo ""; echo "Redis is not installed. Cannot save results."; }
+			check_redis && { save_result || { echo ""; echo "Error when saving into Redis (host: ${redis_hostname}, port: ${redis_port}). No results saved."; } } || { echo ""; echo "Redis is not installed. Cannot save results."; }
 		fi
 		# get a list of countries so next time, there's gonna be autocompletion
 		# run it as a background job, so the user gets the prompt faster
