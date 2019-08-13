@@ -11,6 +11,7 @@ lat=""
 lon=""
 response=""
 countries_file="${HOME}/.countries"
+save_option=""
 
 # prints help - how to use the program
 function print_help {
@@ -27,12 +28,15 @@ geo.bash -C Estonia
 geo.bash -c Prague -C "Czech Republic"
 geo.bash --help for printing this help
 geo.bash --lat 50.0874654 --lon 14.4212535
+geo.bash -c Prague -C Czechia --save
+geo.bash -c Lisbon -C Portugal -s
 
 Prerequisites:
 -python2 || python3
 -curl || wget || httpie
 -Internet connection
 -optional: jq (only if you want to use autocompletion for countries)
+-if -s or --save option is used, Redis is necessary
 
 MIT licence
 Made by Pavel Saman
@@ -41,8 +45,8 @@ EOF
 
 # checks for correct params and save city and country
 function check_params {
-	# there have to be between 1 and 4 params
-	if (( $# > 4 || $# < 1 || $# == 3 )); then
+	# there have to be between 1 and 5 params
+	if (( $# > 5 || $# < 1 || $# == 3 )); then
 		return 1
 	fi	
 	
@@ -65,6 +69,12 @@ function check_params {
 	
 	# no empty query string
 	[[ -z $1 || -z $3 ]] && return 1
+
+	# if there are 5 params, the last one has to be -s or --save
+	if (( $# == 5 )); then
+		[[ $5 != "--save" && $5 != "-s" ]] && return 1
+		save_option="1"
+	fi
 
 	# 1st and 3rd have to be -c and -C, or --lat and --lon for reverse search
 	if [[ $1 = "-c" ]]; then
@@ -195,6 +205,37 @@ function print_response {
 	fi
 }
 
+# returns 1 if Redis is not in $PATH
+function check_redis {
+	redis-cli --version >/dev/null 2>&1 || return 1
+	return 0
+}
+
+# saves the first result into Redis
+# the key will be "places" and members will be in format ${city}:${country}
+function save_result {
+	if [[ $python == "2" ]]; then
+		lat=$(python2 -c "import sys, json; print json.load(sys.stdin)[0]['lat']" <<< "$response")
+		lon=$(python2 -c "import sys, json; print json.load(sys.stdin)[0]['lon']" <<< "$response")
+	else
+		lat=$(python3 -c "import sys, json; print(json.load(sys.stdin)[0]['lat'])" <<< "$response")
+		lon=$(python3 -c "import sys, json; print(json.load(sys.stdin)[0]['lon'])" <<< "$response")
+	fi
+
+	# save into Redis
+	# a place might already be stored, then I check if it is stored and only if it isn't there's an error
+	result=$(redis-cli GEOADD places "$lat" "$lon" "${city}:${country}" 2>/dev/null)
+	if (( result == 0 )); then # either an error or a place is already stored
+		already_exists=$(redis-cli GEOHASH places "${city}:${country}")
+		[[ $already_exists =~ (nil) ]] && return 1 # error
+		return 0
+	elif (( result > 1 || result < 0 )); then # error (shouldn't ever go in here, but to be sure)
+		return 1
+	elif (( result == 1 )); then # successfully stored into Redis
+		return 0
+	fi
+}
+
 # get a list of countries for autocompletion
 # this function is meant to be run as a job since it takes forever to parse the result
 function get_countries {
@@ -220,6 +261,11 @@ case "$1" in
 		prepare_link
 		get_resource "$api_uri" || { echo "An error occured when getting the resource. Cannot continue."; exit 1; }
 		print_response
+		# if save option is present
+		if (( save_option == 1 )); then
+			# Redis has to be installed, only then save results
+			check_redis && { save_result || { echo ""; echo "Error when saving into Redis. No results saved."; } } || { echo ""; echo "Redis is not installed. Cannot save results."; }
+		fi
 		# get a list of countries so next time, there's gonna be autocompletion
 		# run it as a background job, so the user gets the prompt faster
 		get_countries "$api_countries" &

@@ -6,6 +6,8 @@ The API that gets queried for data is https://locationiq.com/
 
 Make sure you have python2 or python3 installed as well as one of the following: wget, curl, httpie. If you want to use autocompletion for countries (\<tab\>\<tab\> after -C option), you need to have jq installed.
 
+If you want to save the first result (-s or --save option), Redis has to be installed.
+
 # Installation Steps
 1) git clone or just get both of the .bash scripts as well as Makefile
 2) cd geo
@@ -23,6 +25,8 @@ $ geo.bash -c Tallinn
 $ geo.bash -C Estonia
 $ geo.bash -c Prague -C "Czech Republic"
 $ geo --lat 50.0874654 --lon 14.4212535
+$ geo -c Lisbon -C Portugal --save
+$ geo -c Berlin -C Germany -s
 ```
 
 # Example Output
@@ -64,3 +68,9 @@ Display all 250 possibilities? (y or n)
 $ geo.bash -C Ca<tab><tab>
 Cabo\ Verde      Cambodia         Cameroon         Canada           Cayman\ Islands
 ```
+
+# Redis storage
+
+The first result could be saved into Redis with -s or --save option as the 5th parameter.
+The key used is "places", members are in th following format: ${city}:${country}
+
