@@ -24,9 +24,9 @@ $ geo.bash Prague
 $ geo.bash -c Tallinn
 $ geo.bash -C Estonia
 $ geo.bash -c Prague -C "Czech Republic"
-$ geo --lat 50.0874654 --lon 14.4212535
-$ geo -c Lisbon -C Portugal --save
-$ geo -c Berlin -C Germany -s
+$ geo.bash --lat 50.0874654 --lon 14.4212535
+$ geo.bash -c Lisbon -C Portugal --save
+$ geo.bash -c Berlin -C Germany -s
 ```
 
 # Example Output
